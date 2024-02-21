@@ -100,8 +100,8 @@ function addGeoms(data) {
   }
 
   // The geometries are styled slightly differently on mouse hovers
-  let geomStyle = { color: "#2ca25f", fillColor: "#99d8c9", weight: 0 };
-  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 0 };
+  let geomStyle = { fillColor: "#99d8c9" };
+  let geomHoverStyle = { fillColor: "#2ca25f" };
 
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
