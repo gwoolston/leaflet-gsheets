@@ -43,7 +43,7 @@ function init() {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 16
-});
+}).addTo(map);
 
   map.on("click", function () {
     map.closePopup();
