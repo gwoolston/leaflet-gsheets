@@ -5,28 +5,23 @@
  * The Sheets are then imported using PapaParse and overwrite the initially laded layers
  */
 
-
 // the first is the geometry layer and the second the points
 let geomURL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUXmfjpHl4sM-cUN-fiqrTEkf7JUYBiDqQasOLJVI2fnwiUZWxETnZZlXTva-1B4MYq53JTrkTdYiu/pub?output=csv";
 
-// let pointsURL =
-//   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSau6Ahj2C_c206-YM5Wp_faUseKzmM3uoxdmXGjUv_cGpWabeee5kyZaIxzxqAEtRNKbhIsYh4BJMJ/pub?output=csv";
-
 window.addEventListener("DOMContentLoaded", init);
 
 let map;
-// let sidebar;
-// let panelID = "my-info-panel";
 
 /*
  * init() is called when the page has loaded
  */
+
 function init() {
 
   // Create Map, Center on Santa Cruz
   var mapOptions = {
-    center: [37.06896802407835, -121.79781540900152],
+    center: [37.03441286956093, -121.8925558355639],
     zoom: 10,
     zoomControl: false
   }
@@ -38,58 +33,21 @@ function init() {
   }).addTo(map);
 
   // add Basemap (Carto Positron)
-  L.tileLayer(
-    "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
-    {
-      attribution:
-        "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>",
-      subdomains: "abcd",
-      maxZoom: 16,
-    }
-  ).addTo(map);
+  var geographyBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
 
+  var labelsBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 16
+});
 
-
-
-// // add Basemap (Carto Positron)
-// L.tileLayer(
-//     "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
-//     {
-//         subdomains: "abcd",
-//         maxZoom: 16,
-//     }
-// ).addTo(map);
-
-// // Add attribution control
-// L.control.attribution({
-//     position: 'bottomright',
-//     prefix: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> &copy; <a href='http://cartodb.com/attributions'>CartoDB</a>"
-// }).addTo(map);
-
-  // sidebar = L.control
-  //   .sidebar({
-  //     container: "sidebar",
-  //     closeButton: false,
-  //     position: "left",
-  //   })
-  //   .addTo(map);
-
-  // let panelContent = {
-  //   id: panelID,
-  //   tab: "<i class='fa fa-bars active'></i>",
-  //   pane: "<p id='sidebar-content'></p>",
-  //   title: "<h2 id='sidebar-title'>Nothing selected</h2>",
-  // };
-  // sidebar.addPanel(panelContent);
-
-  // map.on("click", function () {
-  //   sidebar.close(panelID);
-  // });
   map.on("click", function () {
     map.closePopup();
   });
-
-// Use PapaParse to load data from Google Sheets and call the respective functions to add those to the map.
 
   Papa.parse(geomURL, {
     download: true,
@@ -97,149 +55,124 @@ function init() {
     complete: addGeoms,
   });
 
-
-  // Uncomment for adding point geometries.
-  // Papa.parse(pointsURL, {
-  //   download: true,
-  //   header: true,
-  //   complete: addPoints,
-  // });
-
 }
 
 
 /*
- * Load Geometry Column - WORKING 
+ * Load Geometry Column
  */
 
 function addGeoms(data) {
   data = data.data;
-  // Need to convert the PapaParse JSON into a GeoJSON
-  // Start with an empty GeoJSON of type FeatureCollection
-  // All the rows will be inserted into a single GeoJSON
+
   let fc = {
     type: "FeatureCollection",
     features: [],
   };
 
-  for (let row in data) {
-    // The Sheets data has a column 'include' that specifies if that row should be mapped
-    if (data[row].include == "y") {
-      let features = parseGeom(JSON.parse(data[row].geometry));
-      features.forEach((el) => {
-        el.properties = {
-          name: data[row].name,
-          description: data[row].description,
-          // Inclusionary Zoning [IZ]
-          IZscore: data[row].IZscore,
-          IZOrequired: data[row].IZOrequired,
-          IZOsystem: data[row].IZOsystem,
-          IZOenhanced: data[row].IZOenhanced,
-          IZOaffordable: data[row].IZOaffordable,
-          IZRrequired: data[row].IZRrequired,
-          IZRsystem: data[row].IZRsystem,
-          IZRenhanced: data[row].IZRenhanced,
-          IZRaffordable: data[row].IZRaffordable,
-          IZcolor: data[row].IZcolor,
-          // Condo Conversion [CC]
-          CCscore: data[row].CCscore,
-          CCexists: data[row].CCexists,
-          CCnew: data[row].CCnew,
-          CClimit: data[row].CClimit,
-          CCfees: data[row].CCfees,
-          CCreplacement: data[row].CCreplacement,
-          CCrelocation: data[row].CCrelocation,
-          CCcolor: data[row].CCcolor,
-          // Opportunity to Purchase Act [OPA]
-          OPAscore: data[row].OPAscore,
-          COPAexists: data[row].COPAexists,
-          COPAallaff: data[row].COPAallaff,
-          COPAfunding: data[row].COPAfunding,
-          TOPAexists: data[row].TOPAexists,
-          TOPAallaff: data[row].TOPAallaff,
-          TOPAfunding: data[row].TOPAfunding,
-          OPAcolor: data[row].OPAcolor,
-          // Community Land Trust [CLT]
-          CLTscore: data[row].CLTscore,
-          CLTexists: data[row].CLTexists,
-          CLTportfolio: data[row].CLTportfolio,
-          CLTiz: data[row].CLTiz,
-          CLTmunicipal: data[row].CLTmunicipal,
-          CLTelement: data[row].CLTelement,
-          CLTfunding: data[row].CLTfunding,
-          CLTcolor: data[row].CLTcolor,
-          // Just Cause Eviction [JCE]
-          JCEscore: data[row].JCEscore,
-          JCEexists: data[row].JCEexists,
-          JCEmonths: data[row].JCEmonths,
-          JCEexempt: data[row].JCEcover,
-          JCEmonitoring: data[row].JCEmonitoring,
-          JCEpenalties: data[row].JCEpenalties,
-          JCErelocation: data[row].JCErelocation,
-          JCEnotice: data[row].JCEnotice,
-          JCEcolor: data[row].JCEcolor,
-          // Rent Stablization [RS]
-          RSscore: data[row].RSscore,
-          RSexists: data[row].RSexists,
-          RSyearcap: data[row].RSyearcap,
-          RSexempt: data[row].RSexempt,
-          RScondo: data[row].RScondo,
-          RSjustcause: data[row].RSjustcause,
-          RScolor: data[row].RScolor,
-        };
+  let promises = [];
 
-      fc.features.push(el);
-      });
+  for (let row in data) {
+    if (data[row].include == "y") {
+      let geojsonUrl = data[row].geometry;
+      let promise = fetch(geojsonUrl)
+        .then(response => response.json())
+        .then(geojsonData => {
+          if (geojsonData.features && Array.isArray(geojsonData.features)) {
+            geojsonData.features.forEach((feature) => {
+              let properties = {
+                name: data[row].name,
+                description: data[row].description,
+
+                // Rent Stablization [RS]
+                RSscore: data[row].RSscore,
+                RSexists: data[row].RSexists,
+                RSyearcap: data[row].RSyearcap,
+                RSexempt: data[row].RSexempt,
+                RScondo: data[row].RScondo,
+                RSjustcause: data[row].RSjustcause,
+                RScolor: data[row].RScolor,
+
+                // Inclusionary Zoning - Owner [IZO]
+                IZOscore: data[row].IZOscore,
+                IZOrequired: data[row].IZOrequired,
+                IZOsystem: data[row].IZOsystem,
+                IZOenhanced: data[row].IZOenhanced,
+                IZOaffordable: data[row].IZOaffordable,
+                IZOcolor: data[row].IZOcolor,
+
+                // Inclusionary Zoning - Renter [IZR]
+                IZRscore: data[row].IZRscore,
+                IZRrequired: data[row].IZRrequired,
+                IZRsystem: data[row].IZRsystem,
+                IZRenhanced: data[row].IZRenhanced,
+                IZRaffordable: data[row].IZRaffordable,
+                IZRcolor: data[row].IZRcolor,
+
+                // Condo Conversion [CC]
+                CCscore: data[row].CCscore,
+                CCexists: data[row].CCexists,
+                CCnew: data[row].CCnew,
+                CClimit: data[row].CClimit,
+                CCfees: data[row].CCfees,
+                CCreplacement: data[row].CCreplacement,
+                CCrelocation: data[row].CCrelocation,
+                CCcolor: data[row].CCcolor,
+
+                // Opportunity to Purchase Act [OPA]
+                OPAscore: data[row].OPAscore,
+                COPAexists: data[row].COPAexists,
+                COPAallaff: data[row].COPAallaff,
+                COPAfunding: data[row].COPAfunding,
+                TOPAexists: data[row].TOPAexists,
+                TOPAallaff: data[row].TOPAallaff,
+                TOPAfunding: data[row].TOPAfunding,
+                OPAcolor: data[row].OPAcolor,
+
+                // Community Land Trust [CLT]
+                CLTscore: data[row].CLTscore,
+                CLTexists: data[row].CLTexists,
+                CLTportfolio: data[row].CLTportfolio,
+                CLTiz: data[row].CLTiz,
+                CLTmunicipal: data[row].CLTmunicipal,
+                CLTelement: data[row].CLTelement,
+                CLTfunding: data[row].CLTfunding,
+                CLTcolor: data[row].CLTcolor,
+
+                // Just Cause Eviction [JCE]
+                JCEscore: data[row].JCEscore,
+                JCEexists: data[row].JCEexists,
+                JCEmonths: data[row].JCEmonths,
+                JCEexempt: data[row].JCEcover,
+                JCEmonitoring: data[row].JCEmonitoring,
+                JCEpenalties: data[row].JCEpenalties,
+                JCErelocation: data[row].JCErelocation,
+                JCEnotice: data[row].JCEnotice,
+                JCEcolor: data[row].JCEcolor,
+
+              };
+
+              let newFeature = {
+                type: "Feature",
+                geometry: feature.geometry,
+                properties: properties,
+              };
+              fc.features.push(newFeature);
+            });
+          } else {
+            console.error("Features array is missing or invalid in GeoJSON data fetched from the external URL.");
+          }
+        });
+
+      promises.push(promise);
     }
   }
-  
 
-/*
- * Load Geojson File - NOT WORKING 
- */
+  Promise.all(promises).then(() => {
+    console.log(fc);
 
-// var file_data_list = [];
-// // Use Promise.all to wait for all fetch requests to complete
-// Promise.all(data.map((row, index) => {
-//         let filePath = row.filePaths;
-//         return fetch(filePath, {
-//                 method: 'GET',
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 }
-//             })
-//             .then(response => response.json())
-//             .then(geoJSON => {
-//                 // Store the features in file_data_list at the correct index
-//                 file_data_list[index] = parseGeom(geoJSON);
-//             });
-// }))
-// .then(() => {
-//     // After all fetch requests are completed
-//     for (let row in data) {
-//         if (data[row].include == "y") {
-//             let features = file_data_list[row] || []; // Access features at the correct index
-//             features.forEach((el) => {
-//                 el.properties = {
-//                     name: data[row].name,
-//                     description: data[row].description,
-//                     score: data[row].score,
-//                     exists: data[row].exists,
-//                     yearcap: data[row].yearcap,
-//                     exempt: data[row].exempt,
-//                     condo: data[row].condo,
-//                     justcause: data[row].justcause,
-//                     color: data[row].color,
-//                 };
-//                 fc.features.push(el);
-//             });
-//         }
-//     }
-// })
-// .catch(error => {
-//     console.error('Error fetching JSON:', error);
-// });
-
+    
+    
 /*
 * Styling
 */
@@ -299,8 +232,19 @@ function geomStyleCC(feature) {
   };
 }
 
-function geomStyleIZ(feature) {
-  let fillColor = feature.properties.IZcolor || "##000000";
+function geomStyleIZO(feature) {
+  let fillColor = feature.properties.IZOcolor || "##000000";
+  return {
+    fillColor: fillColor,
+    weight: 0,
+    opacity: 1,
+    color: 'white',
+    fillOpacity: 0.8
+  };
+}
+
+function geomStyleIZR(feature) {
+  let fillColor = feature.properties.IZRcolor || "##000000";
   return {
     fillColor: fillColor,
     weight: 0,
@@ -312,11 +256,13 @@ function geomStyleIZ(feature) {
 
   let geomHoverStyle = { color: "black", weight: 0 };
 
+
+
 /*
 * Layers
 */
 
-// Rent Stabalization
+  // Rent Stabalization
   let rsGeojsonLayer = L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
       layer.on({
@@ -374,10 +320,9 @@ function geomStyleIZ(feature) {
       });
     },
     style: geomStyleRS,
-  });
-  rsGeojsonLayer;
-  
-// Just Cause Eviction
+  });rsGeojsonLayer.addTo(map);
+
+  // Just Cause Eviction
 let jceGeojsonLayer = L.geoJSON(fc, {
   onEachFeature: function (feature, layer) {
     layer.on({
@@ -406,7 +351,6 @@ let jceGeojsonLayer = L.geoJSON(fc, {
   },
   style: geomStyleJCE,
 });
-jceGeojsonLayer;
 
 // Community Land Trust
 let cltGeojsonLayer = L.geoJSON(fc, {
@@ -436,7 +380,6 @@ let cltGeojsonLayer = L.geoJSON(fc, {
   },
   style: geomStyleCLT,
 });
-cltGeojsonLayer;
 
 // Opportunity to Purchase Act
 let opaGeojsonLayer = L.geoJSON(fc, {
@@ -466,7 +409,6 @@ let opaGeojsonLayer = L.geoJSON(fc, {
   },
   style: geomStyleOPA,
 });
-opaGeojsonLayer;
 
 // Condo Conversion
 let ccGeojsonLayer = L.geoJSON(fc, {
@@ -496,14 +438,13 @@ let ccGeojsonLayer = L.geoJSON(fc, {
   },
   style: geomStyleCC,
 });
-ccGeojsonLayer;
 
-// Inclusionary Zoning
-let izGeojsonLayer = L.geoJSON(fc, {
+// Inclusionary Zoning - Owner
+let izoGeojsonLayer = L.geoJSON(fc, {
   onEachFeature: function (feature, layer) {
     layer.on({
       mouseout: function (e) {
-           e.target.setStyle(geomStyleIZ);
+           e.target.setStyle(geomStyleIZO);
       },
       // mouseover: function (e) {
       //      e.target.setStyle(geomHoverStyle);
@@ -512,11 +453,34 @@ let izGeojsonLayer = L.geoJSON(fc, {
         e.target.bindPopup(
             "<p>Name: " + e.target.feature.properties.name + "</p>" +
             "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>Score: " + e.target.feature.properties.IZscore + "</p>" +
+            "<p>IZO Score: " + e.target.feature.properties.IZOscore + "</p>" +
             "<p>IZO Required: " + e.target.feature.properties.IZOrequired + "</p>" +
             "<p>IZO System: " + e.target.feature.properties.IZOsystem + "</p>" +
             "<p>IZO Enhanced: " + e.target.feature.properties.IZOenhanced + "</p>" +
-            "<p>IZO Affordable: " + e.target.feature.properties.IZOaffordable + "</p>" +
+            "<p>IZO Affordable: " + e.target.feature.properties.IZOaffordable + "</p>"
+        ).openPopup();
+        L.DomEvent.stopPropagation(e);
+       },
+    });
+  },
+  style: geomStyleIZO,
+});
+
+// Inclusionary Zoning - Renter
+let izrGeojsonLayer = L.geoJSON(fc, {
+  onEachFeature: function (feature, layer) {
+    layer.on({
+      mouseout: function (e) {
+           e.target.setStyle(geomStyleIZR);
+      },
+      // mouseover: function (e) {
+      //      e.target.setStyle(geomHoverStyle);
+      // },
+      click: function (e) {
+        e.target.bindPopup(
+            "<p>Name: " + e.target.feature.properties.name + "</p>" +
+            "<p>Description: " + e.target.feature.properties.description + "</p>" +
+            "<p>IZR Score: " + e.target.feature.properties.IZRscore + "</p>" +
             "<p>IZR Required: " + e.target.feature.properties.IZRrequired + "</p>" +
             "<p>IZR System: " + e.target.feature.properties.IZRsystem + "</p>" +
             "<p>IZR Enhanced: " + e.target.feature.properties.IZRenhanced + "</p>" +
@@ -526,24 +490,21 @@ let izGeojsonLayer = L.geoJSON(fc, {
        },
     });
   },
-  style: geomStyleIZ,
+  style: geomStyleIZR,
 });
-izGeojsonLayer.addTo(map);
 
-
-// Add Layers to the map
-  let baseLayers = {
-    "Inclusionary Zoning": izGeojsonLayer, 
+var baseMaps = {
+    "Rent Stablization": rsGeojsonLayer,
+    "Inclusionary Zoning - Owner": izoGeojsonLayer, 
+    "Inclusionary Zoning - Renter": izrGeojsonLayer, 
     "Condo Conversion": ccGeojsonLayer, 
     "Opportunity to Purchase Act": opaGeojsonLayer, 
     "Community Land Trusts": cltGeojsonLayer, 
-    "Just Cause Eviction": jceGeojsonLayer,
-    "Rent Stablization": rsGeojsonLayer
+    "Just Cause Eviction": jceGeojsonLayer
   };
 
-
 // Create the control and add it to the map;
-var control = L.control.layers(baseLayers, null, { collapsed: false, position: 'topleft' });
+var control = L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' });
 control.addTo(map);
 
 // Call the getContainer routine.
@@ -555,69 +516,8 @@ var sidebar = document.getElementById('sidebar');
 // Finally append the control container to the sidebar.
 sidebar.appendChild(htmlObject);
 
-
-
-
-//  // Finally append that node to the new parent, recursively searching out and re-parenting nodes.
-//  function setParent(el, newParent)
-//  {
-//     newParent.appendChild(el);
-//  }
-//  setParent(htmlObject, a);
-
+})
 }
-
-  //   for (let row in data) {
-  //     // The Sheets data has a column 'include' that specifies if that row should be mapped
-  //      if (data[row].include == "y") {
-  //     let filePath = data[row].filePaths; 
-
-  //       fetch(filePath, {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //           // You can add more headers if needed
-  //           // 'Authorization': 'Bearer your-token',
-  //         }
-  //       })
-  //       .then(response => {
-  //         if (!response.ok) {
-  //           throw new Error('Network response was not ok');
-  //         }
-  //         return response.json();
-  //       })
-  //       .then(geoJSON => {
-  //         let features = parseGeom(geoJSON);
-  //         // Continue processing the JSON data
-  //       })
-  //       .catch(error => {
-  //         console.error('Error fetching JSON:', error);
-  //         // Handle the error gracefully
-  //       });
-
-// old: make content appear in a Sidebar
-        // click: function (e) {
-        //   // This zooms the map to the clicked geometry
-        //   // Uncomment to enable
-        //   // map.fitBounds(e.target.getBounds());
-
-        //   // if this isn't added, then map.click is also fired!
-        //   L.DomEvent.stopPropagation(e);
-
-          
-
-        //   document.getElementById("sidebar-title").innerHTML =
-        //     e.target.feature.properties.name;
-        //   document.getElementById("sidebar-content").innerHTML =
-        //   "<p>Description: " + e.target.feature.properties.description + "</p>" +
-        //   "<p>Score: " + e.target.feature.properties.score + "</p>" +
-        //   "<p>Exists: " + e.target.feature.properties.exists + "</p>" +
-        //   "<p>Year Cap: " + e.target.feature.properties.yearcap + "</p>" +
-        //   "<p>Exempt: " + e.target.feature.properties.exempt + "</p>" +
-        //   "<p>Condo: " + e.target.feature.properties.condo + "</p>" +
-        //   "<p>Just Cause: " + e.target.feature.properties.justcause + "</p>";
-        //   sidebar.open(panelID);
-        // },
 
 
 /*
@@ -653,27 +553,6 @@ function addPoints(data) {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
     marker.addTo(pointGroupLayer);
-
-// marker.bindPopup(data[row].name);
-
-    // COMMENT THE NEXT GROUP OF LINES TO DISABLE SIDEBAR FOR THE MARKERS
-    // marker.feature = {
-    //   properties: {
-    //     name: data[row].name,
-    //     description: data[row].description,
-    //   },
-    // };
-    // marker.on({
-    //   click: function (e) {
-    //     L.DomEvent.stopPropagation(e);
-    //     document.getElementById("sidebar-title").innerHTML =
-    //       e.target.feature.properties.name;
-    //     document.getElementById("sidebar-content").innerHTML =
-    //       e.target.feature.properties.description;
-    //     sidebar.open(panelID);
-    //   },
-    // });
-    // COMMENT UNTIL HERE TO DISABLE SIDEBAR FOR THE MARKERS
 
     // AwesomeMarkers is used to create fancier icons
     let icon = L.AwesomeMarkers.icon({
