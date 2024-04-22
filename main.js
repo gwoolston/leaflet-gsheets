@@ -99,6 +99,7 @@ function addGeoms(data) {
                 IZOsystem: data[row].IZOsystem,
                 IZOenhanced: data[row].IZOenhanced,
                 IZOaffordable: data[row].IZOaffordable,
+                IZOpreference: data[row].IZOpreference,
                 IZOcolor: data[row].IZOcolor,
 
                 // Inclusionary Zoning - Renter [IZR]
@@ -107,6 +108,7 @@ function addGeoms(data) {
                 IZRsystem: data[row].IZRsystem,
                 IZRenhanced: data[row].IZRenhanced,
                 IZRaffordable: data[row].IZRaffordable,
+                IZRpreference: data[row].IZRpreference,
                 IZRcolor: data[row].IZRcolor,
 
                 // Condo Conversion [CC]
@@ -117,6 +119,8 @@ function addGeoms(data) {
                 CCfees: data[row].CCfees,
                 CCreplacement: data[row].CCreplacement,
                 CCrelocation: data[row].CCrelocation,
+                CCnotice: data[row].CCnotice,
+                CCvulnerable: data[row].CCvulnerable,
                 CCcolor: data[row].CCcolor,
 
                 // Opportunity to Purchase Act [OPA]
@@ -148,7 +152,16 @@ function addGeoms(data) {
                 JCEpenalties: data[row].JCEpenalties,
                 JCErelocation: data[row].JCErelocation,
                 JCEnotice: data[row].JCEnotice,
+                JCEretalitory: data[row].JCEretalitory,
+                JCEstabilization: data[row].JCEstabilization,
+                JCElegal: data[row].JCElegal,
                 JCEcolor: data[row].JCEcolor,
+
+                // Housing Impact [HI]
+                HIscore: data[row].HIscore,
+                HIrexists: data[row].HIrexists,
+                HInrexists: data[row].HInrexists,
+                HIcolor: data[row].HIcolor,
 
               };
 
@@ -254,6 +267,17 @@ function geomStyleIZR(feature) {
   };
 }
 
+function geomStyleHI(feature) {
+  let fillColor = feature.properties.HIcolor || "##000000";
+  return {
+    fillColor: fillColor,
+    weight: 0.6,
+    opacity: 1,
+    color: 'white',
+    fillOpacity: 0.8
+  };
+}
+
   let geomHoverStyle = { color: "black", weight: 0 };
 
 
@@ -269,9 +293,6 @@ function geomStyleIZR(feature) {
         mouseout: function (e) {
              e.target.setStyle(geomStyleRS);
         },
-        // mouseover: function (e) {
-        //      e.target.setStyle(geomHoverStyle);
-        // },
         click: function (e) {
           // Create the popup content with table formatting
           var popupContent = `
@@ -329,22 +350,67 @@ let jceGeojsonLayer = L.geoJSON(fc, {
       mouseout: function (e) {
            e.target.setStyle(geomStyleJCE);
       },
-      // mouseover: function (e) {
-      //      e.target.setStyle(geomHoverStyle);
-      // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>Score: " + e.target.feature.properties.JCEscore + "</p>" +
-            "<p>Exists: " + e.target.feature.properties.JCEexists + "</p>" +
-            "<p>Months: " + e.target.feature.properties.JCEmonths + "</p>" +
-            "<p>Exempt: " + e.target.feature.properties.JCEexempt + "</p>" +
-            "<p>Monitoring: " + e.target.feature.properties.JCEmonitoring + "</p>" +
-            "<p>Penalties: " + e.target.feature.properties.JCEpenalties + "</p>" +
-            "<p>Relocation: " + e.target.feature.properties.JCErelocation + "</p>" +
-            "<p>Notice: " + e.target.feature.properties.JCEnotice + "</p>" 
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>Score:</strong></td>
+                    <td>${e.target.feature.properties.JCEscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>Exists:</strong></td>
+                    <td>${e.target.feature.properties.JCEexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>Months:</strong></td>
+                    <td>${e.target.feature.properties.JCEmonths}</td>
+                </tr>
+                <tr>
+                    <td><strong>Exempt:</strong></td>
+                    <td>${e.target.feature.properties.JCEexempt}</td>
+                </tr>
+                <tr>
+                    <td><strong>Monitoring:</strong></td>
+                    <td>${e.target.feature.properties.JCEmonitoring}</td>
+                </tr>
+                <tr>
+                    <td><strong>Penalties:</strong></td>
+                    <td>${e.target.feature.properties.JCEpenalties}</td>
+                </tr>
+                <tr>
+                    <td><strong>Relocation:</strong></td>
+                    <td>${e.target.feature.properties.JCErelocation}</td>
+                </tr>
+                <tr>
+                    <td><strong>Notice:</strong></td>
+                    <td>${e.target.feature.properties.JCEnotice}</td>
+                </tr>
+                <tr>
+                    <td><strong>Retalitory:</strong></td>
+                    <td>${e.target.feature.properties.JCEretalitory}</td>
+                </tr>
+                <tr>
+                    <td><strong>Rent Stabilization:</strong></td>
+                    <td>${e.target.feature.properties.JCEstabilization}</td>
+                </tr>
+                <tr>
+                    <td><strong>Legal Counseling:</strong></td>
+                    <td>${e.target.feature.properties.JCElegal}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -359,21 +425,51 @@ let cltGeojsonLayer = L.geoJSON(fc, {
       mouseout: function (e) {
            e.target.setStyle(geomStyleCLT);
       },
-      // mouseover: function (e) {
-      //      e.target.setStyle(geomHoverStyle);
-      // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>Score: " + e.target.feature.properties.CLTscore + "</p>" +
-            "<p>Exists: " + e.target.feature.properties.CLTexists + "</p>" +
-            "<p>Portfolio: " + e.target.feature.properties.CLTportfolio + "</p>" +
-            "<p>IZ: " + e.target.feature.properties.CLTiz + "</p>" +
-            "<p>Municipal: " + e.target.feature.properties.CLTmunicipal + "</p>" +
-            "<p>Element: " + e.target.feature.properties.CLTelement + "</p>" +
-            "<p>Funding: " + e.target.feature.properties.CLTfunding + "</p>"
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>Score:</strong></td>
+                    <td>${e.target.feature.properties.CLTscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>Exists:</strong></td>
+                    <td>${e.target.feature.properties.CLTexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>Portfolio:</strong></td>
+                    <td>${e.target.feature.properties.CLTportfolio}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZ:</strong></td>
+                    <td>${e.target.feature.properties.CLTiz}</td>
+                </tr>
+                <tr>
+                    <td><strong>Municipal:</strong></td>
+                    <td>${e.target.feature.properties.CLTmunicipal}</td>
+                </tr>
+                <tr>
+                    <td><strong>Element:</strong></td>
+                    <td>${e.target.feature.properties.CLTelement}</td>
+                </tr>
+                <tr>
+                    <td><strong>Funding:</strong></td>
+                    <td>${e.target.feature.properties.CLTfunding}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -392,17 +488,50 @@ let opaGeojsonLayer = L.geoJSON(fc, {
       //      e.target.setStyle(geomHoverStyle);
       // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>Score: " + e.target.feature.properties.OPAscore + "</p>" +
-            "<p>COPA Exists: " + e.target.feature.properties.COPAexists + "</p>" +
-            "<p>COPA All / Aff: " + e.target.feature.properties.COPAallaff + "</p>" +
-            "<p>COPA Funding: " + e.target.feature.properties.COPAfunding + "</p>" +
-            "<p>TOPA Exists: " + e.target.feature.properties.TOPAexists + "</p>" +
-            "<p>TOPA All / Aff: " + e.target.feature.properties.TOPAallaff + "</p>" +
-            "<p>TOPA Funding: " + e.target.feature.properties.TOPAfunding + "</p>"
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>Score:</strong></td>
+                    <td>${e.target.feature.properties.OPAscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>COPA Exists:</strong></td>
+                    <td>${e.target.feature.properties.COPAexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>COPA All / Aff:</strong></td>
+                    <td>${e.target.feature.properties.COPAallaff}</td>
+                </tr>
+                <tr>
+                    <td><strong>COPA Funding:</strong></td>
+                    <td>${e.target.feature.properties.COPAfunding}</td>
+                </tr>
+                <tr>
+                    <td><strong>TOPA Exists:</strong></td>
+                    <td>${e.target.feature.properties.TOPAexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>TOPA All / Aff:</strong></td>
+                    <td>${e.target.feature.properties.TOPAallaff}</td>
+                </tr>
+                <tr>
+                    <td><strong>TOPA Funding:</strong></td>
+                    <td>${e.target.feature.properties.TOPAfunding}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -421,17 +550,58 @@ let ccGeojsonLayer = L.geoJSON(fc, {
       //      e.target.setStyle(geomHoverStyle);
       // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>Score: " + e.target.feature.properties.CCscore + "</p>" +
-            "<p>Exists: " + e.target.feature.properties.CCexists + "</p>" +
-            "<p>New: " + e.target.feature.properties.CCnew + "</p>" +
-            "<p>Limit: " + e.target.feature.properties.CClimit + "</p>" +
-            "<p>Fees: " + e.target.feature.properties.CCfees + "</p>" +
-            "<p>Replacement: " + e.target.feature.properties.CCreplacement + "</p>" +
-            "<p>Relocation: " + e.target.feature.properties.CCrelocation + "</p>"
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>Score:</strong></td>
+                    <td>${e.target.feature.properties.CCscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>Exists:</strong></td>
+                    <td>${e.target.feature.properties.CCexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>New:</strong></td>
+                    <td>${e.target.feature.properties.CCnew}</td>
+                </tr>
+                <tr>
+                    <td><strong>Limit:</strong></td>
+                    <td>${e.target.feature.properties.CClimit}</td>
+                </tr>
+                <tr>
+                    <td><strong>Fees:</strong></td>
+                    <td>${e.target.feature.properties.CCfees}</td>
+                </tr>
+                <tr>
+                    <td><strong>Replacement:</strong></td>
+                    <td>${e.target.feature.properties.CCreplacement}</td>
+                </tr>
+                <tr>
+                    <td><strong>Relocation:</strong></td>
+                    <td>${e.target.feature.properties.CCrelocation}</td>
+                </tr>
+                <tr>
+                    <td><strong>Special Notice:</strong></td>
+                    <td>${e.target.feature.properties.CCnotice}</td>
+                </tr>
+                <tr>
+                    <td><strong>No Displacing Vulnerable:</strong></td>
+                    <td>${e.target.feature.properties.CCvulnerable}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -446,19 +616,47 @@ let izoGeojsonLayer = L.geoJSON(fc, {
       mouseout: function (e) {
            e.target.setStyle(geomStyleIZO);
       },
-      // mouseover: function (e) {
-      //      e.target.setStyle(geomHoverStyle);
-      // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>IZO Score: " + e.target.feature.properties.IZOscore + "</p>" +
-            "<p>IZO Required: " + e.target.feature.properties.IZOrequired + "</p>" +
-            "<p>IZO System: " + e.target.feature.properties.IZOsystem + "</p>" +
-            "<p>IZO Enhanced: " + e.target.feature.properties.IZOenhanced + "</p>" +
-            "<p>IZO Affordable: " + e.target.feature.properties.IZOaffordable + "</p>"
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO Score:</strong></td>
+                    <td>${e.target.feature.properties.IZOscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO Required:</strong></td>
+                    <td>${e.target.feature.properties.IZOrequired}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO System:</strong></td>
+                    <td>${e.target.feature.properties.IZOsystem}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO Enhanced:</strong></td>
+                    <td>${e.target.feature.properties.IZOenhanced}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO Preference:</strong></td>
+                    <td>${e.target.feature.properties.IZOpreference}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZO Affordable:</strong></td>
+                    <td>${e.target.feature.properties.IZOaffordable}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -473,19 +671,47 @@ let izrGeojsonLayer = L.geoJSON(fc, {
       mouseout: function (e) {
            e.target.setStyle(geomStyleIZR);
       },
-      // mouseover: function (e) {
-      //      e.target.setStyle(geomHoverStyle);
-      // },
       click: function (e) {
-        e.target.bindPopup(
-            "<p>Name: " + e.target.feature.properties.name + "</p>" +
-            "<p>Description: " + e.target.feature.properties.description + "</p>" +
-            "<p>IZR Score: " + e.target.feature.properties.IZRscore + "</p>" +
-            "<p>IZR Required: " + e.target.feature.properties.IZRrequired + "</p>" +
-            "<p>IZR System: " + e.target.feature.properties.IZRsystem + "</p>" +
-            "<p>IZR Enhanced: " + e.target.feature.properties.IZRenhanced + "</p>" +
-            "<p>IZR Affordable: " + e.target.feature.properties.IZRaffordable + "</p>"
-        ).openPopup();
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR Score:</strong></td>
+                    <td>${e.target.feature.properties.IZRscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR Required:</strong></td>
+                    <td>${e.target.feature.properties.IZRrequired}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR System:</strong></td>
+                    <td>${e.target.feature.properties.IZRsystem}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR Enhanced:</strong></td>
+                    <td>${e.target.feature.properties.IZRenhanced}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR Preference:</strong></td>
+                    <td>${e.target.feature.properties.IZRpreference}</td>
+                </tr>
+                <tr>
+                    <td><strong>IZR Affordable:</strong></td>
+                    <td>${e.target.feature.properties.IZRaffordable}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
         L.DomEvent.stopPropagation(e);
        },
     });
@@ -493,14 +719,56 @@ let izrGeojsonLayer = L.geoJSON(fc, {
   style: geomStyleIZR,
 });
 
+// Inclusionary Zoning - Renter
+let hiGeojsonLayer = L.geoJSON(fc, {
+  onEachFeature: function (feature, layer) {
+    layer.on({
+      mouseout: function (e) {
+           e.target.setStyle(geomStyleHI);
+      },
+      click: function (e) {
+        // Create the popup content with table formatting
+        var popupContent = `
+            <table class="popup-table">
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${e.target.feature.properties.name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description:</strong></td>
+                    <td>${e.target.feature.properties.description}</td>
+                </tr>
+                <tr>
+                    <td><strong>HI Score:</strong></td>
+                    <td>${e.target.feature.properties.HIscore}</td>
+                </tr>
+                <tr>
+                    <td><strong>Residential:</strong></td>
+                    <td>${e.target.feature.properties.HIrexists}</td>
+                </tr>
+                <tr>
+                    <td><strong>Non-Residential:</strong></td>
+                    <td>${e.target.feature.properties.HInrexists}</td>
+                </tr>
+            </table>
+        `;
+    
+        // Bind the formatted popup content to the target feature and open the popup
+        e.target.bindPopup(popupContent).openPopup();
+        L.DomEvent.stopPropagation(e);
+       },
+    });
+  },
+  style: geomStyleHI,
+});
+
 var baseMaps = {
     "Rent Stablization": rsGeojsonLayer,
     "Inclusionary Zoning - Owner": izoGeojsonLayer, 
     "Inclusionary Zoning - Renter": izrGeojsonLayer, 
     "Condo Conversion": ccGeojsonLayer, 
-    "Opportunity to Purchase Act": opaGeojsonLayer, 
-    "Community Land Trusts": cltGeojsonLayer, 
-    "Just Cause Eviction": jceGeojsonLayer
+    "Just Cause Eviction": jceGeojsonLayer,
+    "Housing Impact / Linkage Fees": hiGeojsonLayer
   };
 
 // Create the control and add it to the map;
