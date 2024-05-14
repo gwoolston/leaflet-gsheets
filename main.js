@@ -82,7 +82,6 @@ function addGeoms(data) {
             geojsonData.features.forEach((feature) => {
               let properties = {
                 name: data[row].name,
-                description: data[row].description,
 
                 // Rent Stablization [RS]
                 RSscore: data[row].RSscore,
@@ -302,10 +301,6 @@ function geomStyleHI(feature) {
                       <td>${e.target.feature.properties.name}</td>
                   </tr>
                   <tr>
-                      <td><strong>Description:</strong></td>
-                      <td>${e.target.feature.properties.description}</td>
-                  </tr>
-                  <tr>
                       <td><strong>Score:</strong></td>
                       <td>${e.target.feature.properties.RSscore}</td>
                   </tr>
@@ -357,10 +352,6 @@ let jceGeojsonLayer = L.geoJSON(fc, {
                 <tr>
                     <td><strong>Name:</strong></td>
                     <td>${e.target.feature.properties.name}</td>
-                </tr>
-                <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
                 </tr>
                 <tr>
                     <td><strong>Score:</strong></td>
@@ -434,10 +425,6 @@ let cltGeojsonLayer = L.geoJSON(fc, {
                     <td>${e.target.feature.properties.name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
-                </tr>
-                <tr>
                     <td><strong>Score:</strong></td>
                     <td>${e.target.feature.properties.CLTscore}</td>
                 </tr>
@@ -496,10 +483,6 @@ let opaGeojsonLayer = L.geoJSON(fc, {
                     <td>${e.target.feature.properties.name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
-                </tr>
-                <tr>
                     <td><strong>Score:</strong></td>
                     <td>${e.target.feature.properties.OPAscore}</td>
                 </tr>
@@ -556,10 +539,6 @@ let ccGeojsonLayer = L.geoJSON(fc, {
                 <tr>
                     <td><strong>Name:</strong></td>
                     <td>${e.target.feature.properties.name}</td>
-                </tr>
-                <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
                 </tr>
                 <tr>
                     <td><strong>Score:</strong></td>
@@ -625,10 +604,6 @@ let izoGeojsonLayer = L.geoJSON(fc, {
                     <td>${e.target.feature.properties.name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
-                </tr>
-                <tr>
                     <td><strong>IZO Score:</strong></td>
                     <td>${e.target.feature.properties.IZOscore}</td>
                 </tr>
@@ -680,10 +655,6 @@ let izrGeojsonLayer = L.geoJSON(fc, {
                     <td>${e.target.feature.properties.name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
-                </tr>
-                <tr>
                     <td><strong>IZR Score:</strong></td>
                     <td>${e.target.feature.properties.IZRscore}</td>
                 </tr>
@@ -733,10 +704,6 @@ let hiGeojsonLayer = L.geoJSON(fc, {
                 <tr>
                     <td><strong>Name:</strong></td>
                     <td>${e.target.feature.properties.name}</td>
-                </tr>
-                <tr>
-                    <td><strong>Description:</strong></td>
-                    <td>${e.target.feature.properties.description}</td>
                 </tr>
                 <tr>
                     <td><strong>HI Score:</strong></td>
