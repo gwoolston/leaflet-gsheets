@@ -729,27 +729,67 @@ let hiGeojsonLayer = L.geoJSON(fc, {
   style: geomStyleHI,
 });
 
-var baseMaps = {
-    "Rent Stablization": rsGeojsonLayer,
-    "Inclusionary Zoning - Owner": izoGeojsonLayer, 
-    "Inclusionary Zoning - Renter": izrGeojsonLayer, 
-    "Condo Conversion": ccGeojsonLayer, 
-    "Just Cause Eviction": jceGeojsonLayer,
-    "Housing Impact / Linkage Fees": hiGeojsonLayer
-  };
+var protectionLayers = {
+  "Rent Stabilization": rsGeojsonLayer,
+  "Just Cause Eviction": jceGeojsonLayer
+};
 
-// Create the control and add it to the map;
+var productionLayers = {
+  "Inclusionary Zoning - Owner": izoGeojsonLayer,
+  "Inclusionary Zoning - Renter": izrGeojsonLayer,
+  "Housing Impact / Linkage Fees": hiGeojsonLayer
+};
+
+var preservationLayers = {
+  "Condo Conversion": ccGeojsonLayer,
+  "Community Land Trusts": cltGeojsonLayer,
+  "TOPA / COPA": opaGeojsonLayer
+};
+
+var baseMaps = {};
+var currentLayer = rsGeojsonLayer; // Set the initial layer
+map.addLayer(currentLayer); // Add the initial layer to the map
+
 var control = L.control.layers(baseMaps, null, { collapsed: false, position: 'topleft' });
 control.addTo(map);
 
-// Call the getContainer routine.
 var htmlObject = control.getContainer();
- 
-// Get the desired parent node.
 var sidebar = document.getElementById('sidebar');
 
-// Finally append the control container to the sidebar.
-sidebar.appendChild(htmlObject);
+function addRadioButtons(layers, headingText, defaultLayer) {
+  var heading = document.createElement('h4');
+  heading.innerHTML = headingText;
+  sidebar.appendChild(heading);
+
+  for (var key in layers) {
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'layerGroup';
+      input.checked = layers[key] === defaultLayer; // Check if it's the default layer
+      input.onchange = (function(layer) {
+          return function() {
+              if (currentLayer) {
+                  map.removeLayer(currentLayer);
+              }
+              map.addLayer(layer);
+              currentLayer = layer;
+          };
+      })(layers[key]);
+
+      var label = document.createElement('label');
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(key));
+      sidebar.appendChild(label);
+      sidebar.appendChild(document.createElement('br'));
+  }
+}
+
+addRadioButtons(protectionLayers, "Protection:", rsGeojsonLayer);
+addRadioButtons(productionLayers, "Production:", null);
+addRadioButtons(preservationLayers, "Preservation:", null);
+
+
+
 
 })
 }
