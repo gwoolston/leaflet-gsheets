@@ -21,8 +21,8 @@ function init() {
 
   // Create Map, Center on Santa Cruz
   var mapOptions = {
-    center: [37.03441286956093, -121.8925558355639],
-    zoom: 10,
+    center: [36.9742330098322, -122.03207045839694],
+    zoom: 9,
     zoomControl: false
   }
  map = L.map('map', mapOptions);
